@@ -23,6 +23,18 @@ func PemEncodeRawCert(cert []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func PemEncodeRawCerts(certs [][]byte) ([]byte, error) {
+	buf := &bytes.Buffer{}
+	for _, certBytes := range certs {
+		data, err := PemEncodeRawCert(certBytes)
+		if err != nil {
+			return nil, err
+		}
+		buf.Write(data)
+	}
+	return buf.Bytes(), nil
+}
+
 func PemEncodePrivateKey(key *rsa.PrivateKey) ([]byte, error) {
 	return PemEncodeRawPrivateKey(x509.MarshalPKCS1PrivateKey(key))
 }

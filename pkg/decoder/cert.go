@@ -19,6 +19,20 @@ func DecodePemCert(data []byte) (cert *x509.Certificate, rest []byte, err error)
 	return cert, rest, nil
 }
 
+func DecodePemCerts(data []byte) ([]*x509.Certificate, error) {
+	var certs []*x509.Certificate
+	for len(data) > 0 {
+		cert, rest, err := DecodePemCert(data)
+		if err != nil {
+			return nil, err
+		}
+		certs = append(certs, cert)
+		data = rest
+	}
+
+	return certs, nil
+}
+
 func DecodePemPrivateKey(data []byte) (key *rsa.PrivateKey, rest []byte, err error) {
 	block, rest := pem.Decode(data)
 	if block == nil {

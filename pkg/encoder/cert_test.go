@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	pemCert = `
+	pemCertA = `
 -----BEGIN CERTIFICATE-----
 MIIDITCCAgmgAwIBAgIRALa+7m4Hx1iyV1LHKW08luYwDQYJKoZIhvcNAQELBQAw
 HjENMAsGA1UEChMEdGVzdDENMAsGA1UEAxMEdGVzdDAeFw0yMTEwMjQwOTE5MDla
@@ -30,7 +30,7 @@ SQzSEpuOtTQtYRRXXz6lJ0vhU/T3rYXRdZ2fGdw8l+MpmbfB4wks3aF5TmMQYJ0I
 YMKSSC0azBfzS8i6s3Is11VgTqSO4N0sCNxrf14uk3fbLeiXiA==
 -----END CERTIFICATE-----
 `
-	pemKey = `
+	pemKeyA = `
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEA5CnUEwN6rEYlfXqLBgYpx+0RSZQz1pFmSae51sIZbxU2KSu+
 pRpJ0uu61y/TGL7zlpNIVfhG69DQSl3W2QwJ35brOl1zu0HxYKc5qGLEVKVsODqL
@@ -59,20 +59,54 @@ BoN4XQvcC54CXvHao1oUA3ypjJmjKyf4WecD2Wqaas9nXDvwcZCiwBa9/+YV5QFt
 GV/Nxjtre0HLPYtArRooOdUz/OOam9ODGb58XOoQkXF7fmx+7BtAjQ==
 -----END RSA PRIVATE KEY-----
 `
+	pemCertB = `
+-----BEGIN CERTIFICATE-----
+MIIDJzCCAg+gAwIBAgIQPgTIfUFASngyfJd27ebNgzANBgkqhkiG9w0BAQsFADAf
+MRAwDgYDVQQKEwdhYmMgaW5jMQswCQYDVQQDEwJjYTAeFw0yMTEwMjQxMjE0MTBa
+Fw0yMjAxMjIxMjE0MTBaMCgxEDAOBgNVBAoTB2FiYyBpbmMxFDASBgNVBAMTC2Ns
+aWVudC1uYW1lMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0q+E02Ht
++xgCTwFBu+zH7aY0vB1Orda3pfTMb0uSSevxQ79aB2Oyfz/ZdWIOIFDEFryOwha1
+6EH24znCgW7mW4wmKKRfEUl/L9sE+atmiogxZXpBy5CxQnQQJ6oP7FMfwLIiBUE4
+9LdQtDrolyjO94S3QQJ/EdS8xpjSdvRyZS323W4A4L+YRkyOD7v8M4kZsYbba3Qf
+rW44TX2L/uHRznVHiYdt4JkmcfHRXk4dO/VmR8COvc64tfqtRpiXvQVGjZPrQaDm
+BSEhPF8/zQTdCwF7EU7qlU4bZpzxlbGPwSR5eiVqu8ORRzNSdiHRZ1R4mdl18tuj
+flIlVg+Dmdp5HQIDAQABo1YwVDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYI
+KwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBT9WZbv325bWdSR9wWd
+mqEv6wia8jANBgkqhkiG9w0BAQsFAAOCAQEAHkUQGMBFWru91FpkejLFT4uXsiL+
+0zqenVA6LOQXFD0hxvKrn/Fy4tJjZaiwB7e7mWFR2u5B7Y8UMwV67+KQypqGBS0E
+lWiYsZA7EwCE7z7RasMXMB1jgj/I9fbHWVOhwSuFW+hYG+3dkKLW7zvdDdlvcVlX
+FUpSaZBLg80t7yPHJC3RJMxoqdIeMq5xWzdR6TE6/SH9Pp8iRoHFB3hsN0eAtRLW
+S3J4qo6C+00W5FTQLaaewomhgphdqIzzE35Le8P5yEuY1FKgjR+2ZzvClY59CiLm
+u6q4FrpUnbTjgFcXm5hHHMvA/4rT6+//X5VM5qZ+0dxcYYgDTOLJ53kq2g==
+-----END CERTIFICATE-----
+`
 )
 
 func TestPemEncodeCert(t *testing.T) {
-	cert, _, err := decoder.DecodePemCert([]byte(pemCert))
+	cert, _, err := decoder.DecodePemCert([]byte(pemCertA))
 	assert.NoError(t, err)
 	pem, err := PemEncodeCert(cert)
 	assert.NoError(t, err)
-	assert.Equal(t, strings.TrimSpace(pemCert), strings.TrimSpace(string(pem)))
+	assert.Equal(t, strings.TrimSpace(pemCertA), strings.TrimSpace(string(pem)))
 }
 
 func TestPemEncodePrivateKey(t *testing.T) {
-	key, _, err := decoder.DecodePemPrivateKey([]byte(pemKey))
+	key, _, err := decoder.DecodePemPrivateKey([]byte(pemKeyA))
 	assert.NoError(t, err)
 	pem, err := PemEncodePrivateKey(key)
 	assert.NoError(t, err)
-	assert.Equal(t, strings.TrimSpace(pemKey), strings.TrimSpace(string(pem)))
+	assert.Equal(t, strings.TrimSpace(pemKeyA), strings.TrimSpace(string(pem)))
+}
+
+func TestPemEncodeRawCerts(t *testing.T) {
+	certs, err := decoder.DecodePemCerts([]byte(pemCertA + pemCertB))
+	assert.NoError(t, err)
+	data := [][]byte{}
+	for _, c := range certs {
+		data = append(data, c.Raw)
+	}
+	pem, err := PemEncodeRawCerts(data)
+	assert.NoError(t, err)
+	t.Logf("\n%s", string(pem))
+	assert.Equal(t, strings.TrimSpace(pemCertA)+"\n"+strings.TrimSpace(pemCertB), strings.TrimSpace(string(pem)))
 }

@@ -80,8 +80,8 @@ func genCert(option certOption) (*x509.Certificate, *rsa.PrivateKey, error) {
 	template := &x509.Certificate{
 		SerialNumber:          serialNum,
 		Subject:               option.ExtraSubject,
-		NotBefore:             option.NotBeforeValue(),
-		NotAfter:              option.NotAfterValue(),
+		NotBefore:             option.getNotBefore(),
+		NotAfter:              option.getNotAfter(),
 		BasicConstraintsValid: true,
 		ExtraExtensions:       option.ExtraExtensions,
 	}
@@ -121,7 +121,7 @@ func genCert(option certOption) (*x509.Certificate, *rsa.PrivateKey, error) {
 
 	privateKey := option.PrivateKey
 	if privateKey == nil {
-		privateKey, err = rsa.GenerateKey(rand.Reader, option.KeySizeValue())
+		privateKey, err = rsa.GenerateKey(rand.Reader, option.getRSAKeySize())
 		if err != nil {
 			return nil, nil, err
 		}
@@ -158,22 +158,22 @@ func genSerialNum() (*big.Int, error) {
 	return serialNum, nil
 }
 
-func (o CertOption) NotBeforeValue() time.Time {
+func (o CertOption) getNotBefore() time.Time {
 	if !o.NotBefore.IsZero() {
 		return o.NotBefore
 	}
 	return time.Now().Add(-time.Hour)
 }
 
-func (o CertOption) NotAfterValue() time.Time {
+func (o CertOption) getNotAfter() time.Time {
 	if !o.NotAfter.IsZero() {
 		return o.NotAfter
 	}
-	notBefore := o.NotBeforeValue()
+	notBefore := o.getNotBefore()
 	return notBefore.Add(defaultCertValidityDuration)
 }
 
-func (o CertOption) KeySizeValue() int {
+func (o CertOption) getRSAKeySize() int {
 	if o.RSAKeySize > 0 {
 		return o.RSAKeySize
 	}

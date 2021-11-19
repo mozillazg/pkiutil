@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 0.2.0 (2021-10-30)
+## [0.2.0] (2021-10-30)
 
 * Add `DecodePemCerts` and `PemEncodeRawCerts`
 

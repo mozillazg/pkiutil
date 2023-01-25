@@ -99,7 +99,8 @@ func Test_genCertWithIpAndExtra(t *testing.T) {
 				Organization: []string{"test"},
 			},
 		},
-		isCA: true,
+		isCA:     false,
+		isServer: true,
 	}
 	cert, key, err := genCert(opt)
 	assert.NoError(t, err)
@@ -116,6 +117,33 @@ func Test_genCertWithIpAndExtra(t *testing.T) {
 	assert.Equal(t, cert.Subject.Organization, opt.ExtraSubject.Organization)
 	assert.Equal(t, []string{"example.com", "abc.com"}, dnsNames)
 	assert.Equal(t, []string{"127.0.0.1", "192.168.0.1"}, ips)
+	assert.Equal(t, cert.ExtKeyUsage, []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth})
+}
+
+func Test_genCertWithExtraKeyUsage(t *testing.T) {
+	opt := certOption{
+		CertOption: CertOption{
+			Hosts:     []string{"example.com", "127.0.0.1", "abc.com", "192.168.0.1"},
+			NotBefore: time.Now(),
+			NotAfter:  time.Now().Add(time.Minute),
+			ExtraSubject: pkix.Name{
+				CommonName:   "test",
+				Organization: []string{"test"},
+			},
+			ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageCodeSigning, x509.ExtKeyUsageEmailProtection},
+		},
+		isCA:     false,
+		isServer: true,
+	}
+	cert, key, err := genCert(opt)
+	assert.NoError(t, err)
+	assert.NotNil(t, cert)
+	assert.NotNil(t, key)
+
+	assert.Equal(t, cert.Subject.CommonName, opt.ExtraSubject.CommonName)
+	assert.Equal(t, cert.Subject.Organization, opt.ExtraSubject.Organization)
+	assert.Equal(t, cert.ExtKeyUsage, []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageCodeSigning,
+		x509.ExtKeyUsageEmailProtection})
 }
 
 type CertFiles struct {

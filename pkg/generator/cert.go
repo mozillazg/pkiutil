@@ -32,6 +32,7 @@ type CertOption struct {
 
 	ExtraSubject    pkix.Name
 	ExtraExtensions []pkix.Extension
+	ExtKeyUsage     []x509.ExtKeyUsage
 }
 
 type certOption struct {
@@ -117,6 +118,18 @@ func genCert(option certOption) (*x509.Certificate, *rsa.PrivateKey, error) {
 		template.KeyUsage = x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment
 		template.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}
 		template.IsCA = false
+	}
+	if len(option.ExtKeyUsage) > 0 {
+		var currUsages []x509.ExtKeyUsage
+		currUsages = append(currUsages, template.ExtKeyUsage...)
+		for _, newUsage := range option.ExtKeyUsage {
+			for _, exit := range currUsages {
+				if exit == newUsage {
+					continue
+				}
+				template.ExtKeyUsage = append(template.ExtKeyUsage, newUsage)
+			}
+		}
 	}
 
 	privateKey := option.PrivateKey

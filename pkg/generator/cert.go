@@ -52,6 +52,16 @@ func GenCACert(option CertOption) (*x509.Certificate, *rsa.PrivateKey, error) {
 	return genCert(opt)
 }
 
+func GenDoubleEndCert(option CertOption) (*x509.Certificate, *rsa.PrivateKey, error) {
+	opt := certOption{
+		CertOption: option,
+		isCA:       false,
+		isServer:   true,
+		isClient:   true,
+	}
+	return genCert(opt)
+}
+
 func GenServerCert(option CertOption) (*x509.Certificate, *rsa.PrivateKey, error) {
 	opt := certOption{
 		CertOption: option,
@@ -104,18 +114,20 @@ func genCert(option certOption) (*x509.Certificate, *rsa.PrivateKey, error) {
 		template.DNSNames = append(template.DNSNames, h)
 	}
 
+	template.ExtKeyUsage = []x509.ExtKeyUsage{}
 	if option.isCA {
 		template.KeyUsage = x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment | x509.KeyUsageCertSign
+		template.ExtKeyUsage = nil
 		template.IsCA = true
 	}
 	if option.isServer {
 		template.KeyUsage = x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment
-		template.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}
+		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
 		template.IsCA = false
 	}
 	if option.isClient {
 		template.KeyUsage = x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment
-		template.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}
+		template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
 		template.IsCA = false
 	}
 
